@@ -211,8 +211,12 @@
       box-shadow:none !important;
       transform:none !important;
       border-color:#666 !important;
-      break-inside: avoid;
     }
+    .tile, .op-tile, .stat, .dial-card{ break-inside: avoid; }
+    /* chart is tall: give it its own page so Chrome doesn't crush it to fit */
+    .chart-card{ break-before: page; padding:12px 0 !important; border:none !important; }
+    #chart-holder{ width:100%; }
+    #chart-holder svg{ width:100% !important; height:auto !important; }
     header{ padding:12px 0; border-color:#666; }
     main{ padding:16px 0; }
     .clock{ display:none; }
@@ -229,8 +233,7 @@
     .chart-card svg line{ stroke:#000 !important; stroke-opacity:1 !important; stroke-width:1 !important; }
     .chart-card svg circle{ fill:#000 !important; }
     .chart-card svg text{ fill:#000 !important; font-size:16px !important; font-weight:600 !important; }
-    .chart-legend .swatch.actual{ background:#000 !important; }
-    .chart-legend .swatch.pace, .chart-legend .swatch.target{ background:#000 !important; opacity:1 !important; }
+    .chart-legend .swatch{ border-color:#000 !important; opacity:1 !important; }
 
     /* dial: keep the coloured arc, darken the rest */
     .dial-card svg line, .dial-card svg circle:last-of-type{ stroke:#000 !important; fill:#000 !important; }
@@ -512,7 +515,7 @@ function niceStep(range, count){
 function drawChart(holder, o){
   const w = Math.max(320, holder.clientWidth || 600);
   const h = 340;
-  const pad = { l: 74, r: 64, t: 26, b: 52 };
+  const pad = { l: 74, r: 32, t: 26, b: 52 };
   const hours = 8;
   const nowHour = o.shiftProgress * hours;
   const FS = 17; // axis / label font size
@@ -570,7 +573,7 @@ function drawChart(holder, o){
 
     <line x1="${paceStartX}" y1="${paceStartY}" x2="${paceEndX}" y2="${paceEndY}" stroke="var(--text-dim)" stroke-width="1.75" stroke-dasharray="5 4"/>
     <line x1="${pad.l}" y1="${targetY}" x2="${w-pad.r}" y2="${targetY}" stroke="var(--text-dim)" stroke-width="2" stroke-dasharray="2 5"/>
-    <text x="${w-pad.r+6}" y="${targetY+FS*0.35}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="start">kvóta ${o.target}</text>
+    <text x="${w-pad.r-4}" y="${targetY-8}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="end">kvóta ${o.target}</text>
 
     <line x1="${nowX}" y1="${pad.t}" x2="${nowX}" y2="${h-pad.b}" stroke="var(--border)" stroke-width="1.5"/>
     <text x="${nowX}" y="${pad.t-4}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="middle">teď</text>
