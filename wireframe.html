@@ -186,59 +186,38 @@
     .stat-value{ font-size:22px; }
   }
 
-  /* ---------- print: light theme, minimal toner ---------- */
-  @media print{
-    :root{
-      --bg: #ffffff;
-      --surface: #ffffff;
-      --surface-2: #e0e0e0;
-      --border: #666666;
-      --text: #000000;
-      --text-dim: #222222;
-      --green: #16702F;
-      --green-dim: #DCEBE0;
-      --amber: #7A5200;
-      --amber-dim: #EFE4CC;
-      --red: #A5241C;
-      --red-dim: #EFD6D3;
-      --steel: #0B3C5D;
-    }
-    *{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    body{ background:#fff !important; color:#000 !important; }
-    .app{ min-height:0; }
-    .tile, .op-tile, .stat, .chart-card, .dial-card{
-      background:#fff !important;
-      box-shadow:none !important;
-      transform:none !important;
-      border-color:#666 !important;
-    }
-    .tile, .op-tile, .stat, .dial-card{ break-inside: avoid; }
-    /* chart is tall: give it its own page so Chrome doesn't crush it to fit */
-    .chart-card{ break-before: page; padding:12px 0 !important; border:none !important; }
-    #chart-holder{ width:100%; }
-    #chart-holder svg{ width:100% !important; height:auto !important; }
-    header{ padding:12px 0; border-color:#666; }
-    main{ padding:16px 0; }
-    .clock{ display:none; }
-
-    /* force real ink on the data itself */
-    .stat-value, .stat-value.green, .stat-value.amber, .stat-value.red,
-    .dial-readout .big, .tile-code, .tile-pct, .op-code, .graph-title{ color:#000 !important; }
-    .stat-label, .stat-unit, .op-meta, .graph-sub, .stale, .chart-legend,
-    .tile-name, .tile-pct small, .section-label, .crumb{ color:#222 !important; }
-    .badge{ border:1px solid #000; }
-
-    /* chart: thin coloured strokes vanish on paper — make them black and heavier */
-    .chart-card svg path{ stroke:#000 !important; stroke-width:2.6 !important; }
-    .chart-card svg line{ stroke:#000 !important; stroke-opacity:1 !important; stroke-width:1 !important; }
-    .chart-card svg circle{ fill:#000 !important; }
-    .chart-card svg text{ fill:#000 !important; font-size:16px !important; font-weight:600 !important; }
-    .chart-legend .swatch{ border-color:#000 !important; opacity:1 !important; }
-
-    /* dial: keep the coloured arc, darken the rest */
-    .dial-card svg line, .dial-card svg circle:last-of-type{ stroke:#000 !important; fill:#000 !important; }
-    .dial-card svg text{ fill:#222 !important; }
+  /* ---------- light theme (toggle in header) ---------- */
+  html.light{
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-2: #ECEFF2;
+    --border: #C6CDD4;
+    --text: #14181D;
+    --text-dim: #4A5560;
+    --green: #167A38;
+    --green-dim: #DCEDE1;
+    --amber: #8A5B0E;
+    --amber-dim: #F1E6CF;
+    --red: #B02F26;
+    --red-dim: #F1DAD7;
+    --steel: #1F5C87;
   }
+
+  /* ---------- theme toggle button ---------- */
+  .theme-toggle{
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-num);
+    font-size: 13px;
+    padding: 7px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .theme-toggle:hover{ border-color: var(--steel); color: var(--text); }
+  .theme-toggle:focus-visible{ outline: 2px solid var(--steel); outline-offset: 2px; }
+  .header-right{ display:flex; align-items:center; gap:16px; }
 </style>
 </head>
 <body>
@@ -248,7 +227,10 @@
       <span class="mark">OMNIKA</span>
       <h1 id="header-title">Výroba — přehled středisek</h1>
     </div>
-    <div class="clock" id="clock"></div>
+    <div class="header-right">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">Světlý režim</button>
+      <div class="clock" id="clock"></div>
+    </div>
   </header>
 
   <div id="crumb-wrap" style="padding: 14px 32px 0;"></div>
@@ -515,10 +497,10 @@ function niceStep(range, count){
 function drawChart(holder, o){
   const w = Math.max(320, holder.clientWidth || 600);
   const h = 340;
-  const pad = { l: 74, r: 32, t: 26, b: 52 };
+  const pad = { l: 78, r: 34, t: 28, b: 54 };
   const hours = 8;
   const nowHour = o.shiftProgress * hours;
-  const FS = 17; // axis / label font size
+  const FS = 18; // axis / label font size (SVG user units = CSS px, viewBox is 1:1 with container)
 
   // build mock actual curve: monotonic (always rising), varying slope, up to nowHour
   const steps = 16;
@@ -629,6 +611,29 @@ function tickClock(){
 }
 tickClock();
 setInterval(tickClock, 1000);
+
+/* ---------------- theme toggle ---------------- */
+const themeBtn = document.getElementById('theme-toggle');
+function applyTheme(light){
+  document.documentElement.classList.toggle('light', light);
+  themeBtn.textContent = light ? 'Tmavý režim' : 'Světlý režim';
+  themeBtn.setAttribute('aria-pressed', String(light));
+  try { localStorage.setItem('meter-theme', light ? 'light' : 'dark'); } catch(e){}
+  if (view.screen === 'graph') render(); // redraw chart/dial with new colours
+}
+let startLight = false;
+try { startLight = localStorage.getItem('meter-theme') === 'light'; } catch(e){}
+applyTheme(startLight);
+themeBtn.onclick = () => applyTheme(!document.documentElement.classList.contains('light'));
+
+/* redraw the chart when its container width changes (window resize, print reflow) */
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (view.screen === 'graph') render(); }, 150);
+});
+window.addEventListener('beforeprint', () => { if (view.screen === 'graph') render(); });
+window.addEventListener('afterprint', () => { if (view.screen === 'graph') render(); });
 
 render();
 </script>
