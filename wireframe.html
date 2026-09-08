@@ -185,6 +185,57 @@
     .stat{ min-width: 130px; padding: 12px 14px; }
     .stat-value{ font-size:22px; }
   }
+
+  /* ---------- print: light theme, minimal toner ---------- */
+  @media print{
+    :root{
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #e0e0e0;
+      --border: #666666;
+      --text: #000000;
+      --text-dim: #222222;
+      --green: #16702F;
+      --green-dim: #DCEBE0;
+      --amber: #7A5200;
+      --amber-dim: #EFE4CC;
+      --red: #A5241C;
+      --red-dim: #EFD6D3;
+      --steel: #0B3C5D;
+    }
+    *{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body{ background:#fff !important; color:#000 !important; }
+    .app{ min-height:0; }
+    .tile, .op-tile, .stat, .chart-card, .dial-card{
+      background:#fff !important;
+      box-shadow:none !important;
+      transform:none !important;
+      border-color:#666 !important;
+      break-inside: avoid;
+    }
+    header{ padding:12px 0; border-color:#666; }
+    main{ padding:16px 0; }
+    .clock{ display:none; }
+
+    /* force real ink on the data itself */
+    .stat-value, .stat-value.green, .stat-value.amber, .stat-value.red,
+    .dial-readout .big, .tile-code, .tile-pct, .op-code, .graph-title{ color:#000 !important; }
+    .stat-label, .stat-unit, .op-meta, .graph-sub, .stale, .chart-legend,
+    .tile-name, .tile-pct small, .section-label, .crumb{ color:#222 !important; }
+    .badge{ border:1px solid #000; }
+
+    /* chart: thin coloured strokes vanish on paper — make them black and heavier */
+    .chart-card svg path{ stroke:#000 !important; stroke-width:2.6 !important; }
+    .chart-card svg line{ stroke:#000 !important; stroke-opacity:1 !important; stroke-width:1 !important; }
+    .chart-card svg circle{ fill:#000 !important; }
+    .chart-card svg text{ fill:#000 !important; }
+    .chart-legend .swatch.actual{ background:#000 !important; }
+    .chart-legend .swatch.pace, .chart-legend .swatch.target{ background:#000 !important; opacity:1 !important; }
+
+    /* dial: keep the coloured arc, darken the rest */
+    .dial-card svg line, .dial-card svg circle:last-of-type{ stroke:#000 !important; fill:#000 !important; }
+    .dial-card svg text{ fill:#222 !important; }
+  }
 </style>
 </head>
 <body>
@@ -205,14 +256,18 @@
 <script>
 /* ---------------- mock data ---------------- */
 const STREDISKA = [
-  { code:'01', name:'Řezání profilů', ops: genOps('01', ['10','20','30','40']) },
-  { code:'02', name:'Lisování',       ops: genOps('02', ['10','20','30']) },
-  { code:'03', name:'Svařování',      ops: genOps('03', ['10','20','30','40','50']) },
-  { code:'04', name:'Lakovna',        ops: genOps('04', ['10','20']) },
-  { code:'05', name:'Kompletace',     ops: genOps('05', ['10','20','30','40']) },
-  { code:'06', name:'Montáž žaluzií', ops: genOps('06', ['10','20','30','31','40','50','70','90']) },
-  { code:'07', name:'Balení',         ops: genOps('07', ['10','20','30']) },
-  { code:'08', name:'Expedice',       ops: genOps('08', ['10','20']) },
+  { code:'01', name:'Horizontální žaluzie',     ops: genOps('01', ['1','2','3','4', '5', '6', '99.2', '99.3']) },
+  { code:'02', name:'Vertikální žaluzie',       ops: genOps('02', ['1','2','3', '99.2']) },
+  { code:'04', name:'Panely',                   ops: genOps('04', ['1','2','3', '99.2']) },
+  { code:'05', name:'Rolety',                   ops: genOps('05', ['1','2','3','3.1','4','5','6','7','9']) },
+  { code:'06', name:'Plisse',                   ops: genOps('06', ['1.1.1','1.1.2','1.2','2.1','2.2','3.1','4.1','5.1','6.1','7.1','99.2']) },
+  { code:'07', name:'Dítě proti hmyzu',         ops: genOps('07', ['1','99.2','Insect screens - Balení']) },
+  { code:'13', name:'Dřevěné žaluzie',          ops: genOps('13', ['01','02','03']) },
+  { code:'17', name:'Kompletace - sady',        ops: genOps('17', ['00']) },
+  { code:'56', name:'Venkovní rolety',          ops: genOps('56', ['1','2','3','4','9']) },
+  { code:'63', name:'Woven wood',               ops: genOps('63', ['1','2','3','4','5','99.2']) },
+  { code:'93', name:'Expedice',                 ops: genOps('93', ['00']) },
+  { code:'99', name:'Společná pracoviště',      ops: genOps('99', ['Balení','EC','EC - Předbal','Magnety','Rapid','Sklad']) },
 ];
 
 function genOps(stredisko, suffixes){
