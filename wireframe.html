@@ -156,12 +156,12 @@
     background: var(--surface); border:1px solid var(--border); border-radius:6px;
     padding: 24px; margin-bottom: 20px;
   }
-  .chart-legend{ display:flex; gap:20px; margin-bottom:16px; font-size:12px; color:var(--text-dim); }
-  .chart-legend span{ display:inline-flex; align-items:center; gap:6px; }
-  .swatch{ width:14px; height:3px; display:inline-block; }
-  .swatch.actual{ background: var(--steel); }
-  .swatch.pace{ background: var(--text-dim); }
-  .swatch.target{ background: var(--text-dim); opacity:.4; }
+  .chart-legend{ display:flex; gap:24px; margin-bottom:16px; font-size:13px; color:var(--text); flex-wrap:wrap; }
+  .chart-legend span{ display:inline-flex; align-items:center; gap:8px; }
+  .swatch{ width:22px; height:0; border-top:3px solid var(--steel); display:inline-block; flex-shrink:0; }
+  .swatch.actual{ border-top-style:solid; border-color: var(--steel); }
+  .swatch.pace{ border-top-style:dashed; border-color: var(--text-dim); }
+  .swatch.target{ border-top-style:dashed; border-width:2px; border-color: var(--text-dim); }
 
   .stale{ font-family: var(--font-num); font-size:12px; color: var(--text-dim); }
 
@@ -228,7 +228,7 @@
     .chart-card svg path{ stroke:#000 !important; stroke-width:2.6 !important; }
     .chart-card svg line{ stroke:#000 !important; stroke-opacity:1 !important; stroke-width:1 !important; }
     .chart-card svg circle{ fill:#000 !important; }
-    .chart-card svg text{ fill:#000 !important; }
+    .chart-card svg text{ fill:#000 !important; font-size:13px !important; font-weight:600 !important; }
     .chart-legend .swatch.actual{ background:#000 !important; }
     .chart-legend .swatch.pace, .chart-legend .swatch.target{ background:#000 !important; opacity:1 !important; }
 
@@ -501,12 +501,21 @@ function renderGraph(s, o){
   drawChart(document.getElementById('chart-holder'), o);
 }
 
+function niceStep(range, count){
+  const raw = range / count;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const step = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+  return step * mag;
+}
+
 function drawChart(holder, o){
   const w = Math.max(320, holder.clientWidth || 600);
-  const h = 220;
-  const pad = { l: 36, r: 12, t: 12, b: 24 };
+  const h = 280;
+  const pad = { l: 58, r: 46, t: 18, b: 40 };
   const hours = 8;
   const nowHour = o.shiftProgress * hours;
+  const FS = 13; // axis / label font size
 
   // build mock actual curve: monotonic (always rising), varying slope, up to nowHour
   const steps = 16;
@@ -536,21 +545,39 @@ function drawChart(holder, o){
   const paceStartX = xScale(0), paceStartY = yScale(0);
   const paceEndX = xScale(hours), paceEndY = yScale(o.target);
 
-  let gridLines = '';
+  // x-axis: hour gridlines + labels
+  let xGrid = '';
   for (let i=0;i<=hours;i+=2){
     const gx = xScale(i);
-    gridLines += `<line x1="${gx}" y1="${pad.t}" x2="${gx}" y2="${h-pad.b}" stroke="var(--border)" stroke-width="1"/>`;
-    gridLines += `<text x="${gx}" y="${h-6}" font-family="JetBrains Mono" font-size="10" fill="var(--text-dim)" text-anchor="middle">${i}h</text>`;
+    xGrid += `<line x1="${gx}" y1="${pad.t}" x2="${gx}" y2="${h-pad.b}" stroke="var(--border)" stroke-width="1"/>`;
+    xGrid += `<text x="${gx}" y="${h-pad.b+FS+6}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="middle">${i}h</text>`;
+  }
+
+  // y-axis: nice ks gridlines + labels
+  const yStep = niceStep(maxY, 4);
+  let yGrid = '';
+  for (let v=0; v<=maxY; v+=yStep){
+    const gy = yScale(v);
+    yGrid += `<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="var(--border)" stroke-width="1" stroke-opacity="0.6"/>`;
+    yGrid += `<text x="${pad.l-10}" y="${gy+FS*0.35}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="end">${Math.round(v)}</text>`;
   }
 
   holder.innerHTML = `
   <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" style="overflow:visible">
-    ${gridLines}
-    <line x1="${pad.l}" y1="${targetY}" x2="${w-pad.r}" y2="${targetY}" stroke="var(--text-dim)" stroke-width="1.5" stroke-opacity="0.4" stroke-dasharray="2 5"/>
-    <line x1="${paceStartX}" y1="${paceStartY}" x2="${paceEndX}" y2="${paceEndY}" stroke="var(--text-dim)" stroke-width="1.5" stroke-dasharray="5 4"/>
-    <line x1="${nowX}" y1="${pad.t}" x2="${nowX}" y2="${h-pad.b}" stroke="var(--border)" stroke-width="1"/>
-    <path d="${actualPath}" fill="none" stroke="var(--steel)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${nowX}" cy="${yScale(o.produced)}" r="4" fill="var(--steel)"/>
+    ${yGrid}
+    ${xGrid}
+    <text x="${pad.l-10}" y="${pad.t-4}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="end">ks</text>
+
+    <line x1="${paceStartX}" y1="${paceStartY}" x2="${paceEndX}" y2="${paceEndY}" stroke="var(--text-dim)" stroke-width="1.75" stroke-dasharray="5 4"/>
+    <line x1="${pad.l}" y1="${targetY}" x2="${w-pad.r}" y2="${targetY}" stroke="var(--text-dim)" stroke-width="2" stroke-dasharray="2 5"/>
+    <text x="${w-pad.r+6}" y="${targetY+FS*0.35}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="start">kvóta ${o.target}</text>
+
+    <line x1="${nowX}" y1="${pad.t}" x2="${nowX}" y2="${h-pad.b}" stroke="var(--border)" stroke-width="1.5"/>
+    <text x="${nowX}" y="${pad.t-4}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="middle">teď</text>
+
+    <path d="${actualPath}" fill="none" stroke="var(--steel)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${nowX}" cy="${yScale(o.produced)}" r="5" fill="var(--steel)"/>
+    <text x="${nowX+10}" y="${yScale(o.produced)-8}" font-family="JetBrains Mono" font-size="${FS+1}" font-weight="600" fill="var(--steel)" text-anchor="start">${o.produced}</text>
   </svg>`;
 }
 
