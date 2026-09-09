@@ -30,8 +30,8 @@
 
   /* status colours are conveyed by background-color; force them to print
      even when the browser's "Background graphics" option is off */
-  .tile, .tile::before, .bars, .bars span, .op-track, .op-track div,
-  .dot, .badge, .swatch, .dial-card svg, .chart-card svg{
+  .tile, .bars, .bars span, .op-track, .op-track div,
+  .dot, .simple-bar-outer, .simple-bar-fill{
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -137,61 +137,45 @@
   .status-green .op-track div, .op-track div.status-green{ background: var(--green); border-color: var(--green); }
   .op-meta{ font-family:var(--font-num); font-size:12px; color:var(--text-dim); display:flex; justify-content:space-between; }
 
-  /* ---------- graph view ---------- */
-  .graph-header{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:24px; margin-bottom: 24px; }
-  .graph-title{ font-size:22px; font-weight:600; }
-  .graph-sub{ font-size:13px; color:var(--text-dim); margin-top:4px; }
-
-  .stat-row{ display:flex; gap: 28px; flex-wrap:wrap; margin-bottom: 28px; }
-  .stat{ background: var(--surface); border:1px solid var(--border); border-radius:6px; padding: 16px 20px; min-width:150px; }
-  .stat-label{ font-size:12px; color:var(--text-dim); margin-bottom:6px; }
-  .stat-value{ font-family: var(--font-num); font-size:28px; font-weight:600; }
-  .stat-value.green{ color: var(--green); }
-  .stat-value.amber{ color: var(--amber); }
-  .stat-value.red{ color: var(--red); }
-  .stat-unit{ font-size:14px; color:var(--text-dim); font-weight:400; }
-
-  .badge{
-    display:inline-flex; align-items:center; gap:6px;
-    font-family: var(--font-num); font-size:13px; font-weight:600;
-    padding: 6px 12px; border-radius:4px; border:1px solid transparent;
+  /* ---------- operation view: simple operator display ---------- */
+  .simple-view{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height: calc(100vh - 180px);
+    gap: 40px;
+    padding: 20px;
   }
-  .badge.status-green{ background: var(--green-dim); color: var(--green); border-color: var(--green); }
-  .badge.status-amber{ background: var(--amber-dim); color: var(--amber); border-color: var(--amber); }
-  .badge.status-red{ background: var(--red-dim); color: var(--red); border-color: var(--red); }
-
-  .chart-card{
-    background: var(--surface); border:1px solid var(--border); border-radius:6px;
-    padding: 24px; margin-bottom: 20px;
+  .simple-head{
+    font-family: var(--font-num); font-size: 20px; color: var(--text-dim);
+    letter-spacing: 0.04em;
   }
-  .chart-legend{ display:flex; gap:24px; margin-bottom:16px; font-size:13px; color:var(--text); flex-wrap:wrap; }
-  .chart-legend span{ display:inline-flex; align-items:center; gap:8px; }
-  .swatch{ width:22px; height:0; border-top:3px solid var(--steel); display:inline-block; flex-shrink:0; }
-  .swatch.actual{ border-top-style:solid; border-color: var(--steel); }
-  .swatch.pace{ border-top-style:dashed; border-color: var(--text-dim); }
-  .swatch.target{ border-top-style:dashed; border-width:2px; border-color: var(--text-dim); }
-
-  .stale{ font-family: var(--font-num); font-size:12px; color: var(--text-dim); }
-
-  /* ---------- aktuální tempo dial ---------- */
-  .dial-card{
-    background: var(--surface); border:1px solid var(--border); border-radius:6px;
-    padding: 24px; margin-bottom: 20px;
-    display:flex; align-items:center; gap:32px; flex-wrap:wrap;
+  .simple-bar-outer{
+    width: 100%; max-width: 900px; height: 64px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden;
   }
-  .dial-card svg{ flex-shrink:0; }
-  .dial-readout .stat-label{ font-size:12px; color:var(--text-dim); margin-bottom:6px; }
-  .dial-readout .big{ font-family: var(--font-num); font-size:34px; font-weight:600; }
-  .dial-readout .big.green{ color: var(--green); }
-  .dial-readout .big.amber{ color: var(--amber); }
-  .dial-readout .big.red{ color: var(--red); }
-  .dial-readout .sub{ font-family: var(--font-num); font-size:13px; color:var(--text-dim); margin-top:6px; }
+  .simple-bar-fill{
+    height: 100%; border-radius: 9px 0 0 9px; transition: width .3s ease;
+    border: 1px solid transparent;
+  }
+  .simple-bar-fill.status-green{ background: var(--green); border-color: var(--green); }
+  .simple-bar-fill.status-amber{ background: var(--amber); border-color: var(--amber); }
+  .simple-bar-fill.status-red{ background: var(--red); border-color: var(--red); }
+  .simple-numbers{
+    font-family: var(--font-num); font-weight: 700;
+    display:flex; align-items:baseline; gap: 16px;
+  }
+  .simple-current{ font-size: 96px; line-height:1; }
+  .simple-current.status-green{ color: var(--green); }
+  .simple-current.status-amber{ color: var(--amber); }
+  .simple-current.status-red{ color: var(--red); }
+  .simple-slash{ font-size: 56px; color: var(--text-dim); }
+  .simple-target{ font-size: 56px; color: var(--text-dim); }
 
   @media (max-width: 600px){
     header, main{ padding-left:18px; padding-right:18px; }
-    .stat-row{ gap:12px; }
-    .stat{ min-width: 130px; padding: 12px 14px; }
-    .stat-value{ font-size:22px; }
+    .simple-current{ font-size: 64px; }
+    .simple-slash, .simple-target{ font-size: 36px; }
+    .simple-bar-outer{ height: 44px; }
   }
 
   /* ---------- light theme (toggle in header) ---------- */
@@ -289,27 +273,6 @@ function stredisko_status(s){
   if (statuses.includes('red')) return 'red';
   if (statuses.includes('amber')) return 'amber';
   return 'green';
-}
-
-function needPace(produced, target, shiftProgress){
-  // remaining hours mocked as (1 - shiftProgress) * 8h shift
-  const remainingHours = Math.max(0.25, (1 - shiftProgress) * 8);
-  const remainingQty = target - produced;
-  return remainingQty / remainingHours;
-}
-
-function currentPace(produced, shiftProgress){
-  // pace achieved so far this shift, ks/h
-  const elapsedHours = Math.max(0.25, shiftProgress * 8);
-  return produced / elapsedHours;
-}
-
-function paceStatus(cur, need){
-  if (need <= 0) return 'green';
-  const ratio = cur / need;
-  if (ratio >= 0.95) return 'green';
-  if (ratio >= 0.8) return 'amber';
-  return 'red';
 }
 
 /* ---------------- routing / view state ---------------- */
@@ -429,188 +392,22 @@ function renderOps(s){
 function renderGraph(s, o){
   main.innerHTML = '';
   const st = status(o.produced, o.target, o.shiftProgress);
-  const pace = needPace(o.produced, o.target, o.shiftProgress);
-  const cur = currentPace(o.produced, o.shiftProgress);
-  const pst = paceStatus(cur, pace);
-  const statusText = { green:'V plánu', amber:'Mírně pozadu', red:'Pozadu' }[st];
+  const pct = Math.min(100, Math.round((o.produced/o.target)*100));
 
-  const header = document.createElement('div');
-  header.className = 'graph-header';
-  header.innerHTML = `
-    <div>
-      <div class="graph-title">${o.code} <span class="badge status-${st}">${statusText}</span></div>
-      <div class="graph-sub">Středisko ${s.code} · ${s.name}</div>
+  const wrap = document.createElement('div');
+  wrap.className = 'simple-view';
+  wrap.innerHTML = `
+    <div class="simple-head">${s.code} · ${o.code}</div>
+    <div class="simple-bar-outer">
+      <div class="simple-bar-fill status-${st}" style="width:${pct}%"></div>
     </div>
-    <div class="stale">Data aktualizována před 2 min</div>
-  `;
-  main.appendChild(header);
-
-  const statRow = document.createElement('div');
-  statRow.className = 'stat-row';
-  statRow.innerHTML = `
-    <div class="stat">
-      <div class="stat-label">Vyrobeno dnes</div>
-      <div class="stat-value">${o.produced} <span class="stat-unit">ks</span></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Denní kvóta</div>
-      <div class="stat-value">${o.target} <span class="stat-unit">ks</span></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Potřebné tempo</div>
-      <div class="stat-value">${Math.max(0, pace).toFixed(1)} <span class="stat-unit">ks/h</span></div>
+    <div class="simple-numbers">
+      <span class="simple-current status-${st}">${o.produced}</span>
+      <span class="simple-slash">/</span>
+      <span class="simple-target">${o.target} ks</span>
     </div>
   `;
-  main.appendChild(statRow);
-
-  const dialCard = document.createElement('div');
-  dialCard.className = 'dial-card';
-  const diff = cur - pace;
-  const verdict = { green:'Lze zvolnit', amber:'Držet tempo', red:'Pozadu — přidat' }[pst];
-  const diffText = Math.abs(diff) < 0.05
-    ? 'přesně na potřebném tempu'
-    : `${diff > 0 ? '+' : ''}${diff.toFixed(1)} ks/h vs. potřeba`;
-  dialCard.innerHTML = `
-    <div id="dial-holder"></div>
-    <div class="dial-readout">
-      <div class="big ${pst}">${verdict}</div>
-      <div class="sub">${cur.toFixed(1)} ks/h · cíl ${Math.max(0, pace).toFixed(1)} ks/h · ${diffText}</div>
-    </div>
-  `;
-  main.appendChild(dialCard);
-  drawDial(document.getElementById('dial-holder'), cur, Math.max(0, pace), pst);
-
-  const chartCard = document.createElement('div');
-  chartCard.className = 'chart-card';
-  chartCard.innerHTML = `
-    <div class="chart-legend">
-      <span><span class="swatch actual"></span>Skutečnost</span>
-      <span><span class="swatch pace"></span>Ideální tempo</span>
-      <span><span class="swatch target"></span>Denní kvóta</span>
-    </div>
-    <div id="chart-holder"></div>
-  `;
-  main.appendChild(chartCard);
-  drawChart(document.getElementById('chart-holder'), o);
-}
-
-function niceStep(range, count){
-  const raw = range / count;
-  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
-  const norm = raw / mag;
-  const step = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
-  return step * mag;
-}
-
-function drawChart(holder, o){
-  const w = Math.max(320, holder.clientWidth || 600);
-  const h = 340;
-  const pad = { l: 78, r: 34, t: 28, b: 54 };
-  const hours = 8;
-  const nowHour = o.shiftProgress * hours;
-  const FS = 18; // axis / label font size (SVG user units = CSS px, viewBox is 1:1 with container)
-
-  // build mock actual curve: monotonic (always rising), varying slope, up to nowHour
-  const steps = 16;
-  const weights = [];
-  for (let i=0;i<steps;i++){ weights.push(0.4 + Math.random()); } // positive-only, varying pace per interval
-  const totalWeight = weights.reduce((a,b)=>a+b,0);
-
-  const points = [{ x: 0, y: 0 }];
-  let acc = 0;
-  for (let i=0;i<steps;i++){
-    const hourT = ((i+1)/steps) * nowHour;
-    acc += (weights[i]/totalWeight) * o.produced;
-    points.push({ x: hourT, y: acc });
-  }
-  points[points.length-1].y = o.produced; // pin exact end to current count
-
-  const xScale = x => pad.l + (x/hours) * (w - pad.l - pad.r);
-  const maxY = Math.max(o.target, o.produced) * 1.1;
-  const yScale = y => h - pad.b - (y/maxY) * (h - pad.t - pad.b);
-
-  const actualPath = points.map((p,i) => (i===0?'M':'L') + xScale(p.x).toFixed(1) + ',' + yScale(p.y).toFixed(1)).join(' ');
-  const targetY = yScale(o.target);
-  const nowX = xScale(nowHour);
-  const idealNowY = yScale(o.target * o.shiftProgress);
-
-  // diagonal ideal-pace line: y = (target/hours) * x, from shift start to shift end
-  const paceStartX = xScale(0), paceStartY = yScale(0);
-  const paceEndX = xScale(hours), paceEndY = yScale(o.target);
-
-  // x-axis: hour gridlines + labels
-  let xGrid = '';
-  for (let i=0;i<=hours;i+=2){
-    const gx = xScale(i);
-    xGrid += `<line x1="${gx}" y1="${pad.t}" x2="${gx}" y2="${h-pad.b}" stroke="var(--border)" stroke-width="1"/>`;
-    xGrid += `<text x="${gx}" y="${h-pad.b+FS+6}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="middle">${i}h</text>`;
-  }
-
-  // y-axis: nice ks gridlines + labels
-  const yStep = niceStep(maxY, 4);
-  let yGrid = '';
-  for (let v=0; v<=maxY; v+=yStep){
-    const gy = yScale(v);
-    yGrid += `<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="var(--border)" stroke-width="1" stroke-opacity="0.6"/>`;
-    yGrid += `<text x="${pad.l-10}" y="${gy+FS*0.35}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="end">${Math.round(v)}</text>`;
-  }
-
-  holder.innerHTML = `
-  <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" style="overflow:visible">
-    ${yGrid}
-    ${xGrid}
-    <text x="${pad.l-10}" y="${pad.t-4}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="end">ks</text>
-
-    <line x1="${paceStartX}" y1="${paceStartY}" x2="${paceEndX}" y2="${paceEndY}" stroke="var(--text-dim)" stroke-width="1.75" stroke-dasharray="5 4"/>
-    <line x1="${pad.l}" y1="${targetY}" x2="${w-pad.r}" y2="${targetY}" stroke="var(--text-dim)" stroke-width="2" stroke-dasharray="2 5"/>
-    <text x="${w-pad.r-4}" y="${targetY-8}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="end">kvóta ${o.target}</text>
-
-    <line x1="${nowX}" y1="${pad.t}" x2="${nowX}" y2="${h-pad.b}" stroke="var(--border)" stroke-width="1.5"/>
-    <text x="${nowX}" y="${pad.t-4}" font-family="JetBrains Mono" font-size="${FS}" fill="var(--text-dim)" text-anchor="middle">teď</text>
-
-    <path d="${actualPath}" fill="none" stroke="var(--steel)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${nowX}" cy="${yScale(o.produced)}" r="5" fill="var(--steel)"/>
-    <text x="${nowX+10}" y="${yScale(o.produced)-8}" font-family="JetBrains Mono" font-size="${FS+1}" font-weight="600" fill="var(--steel)" text-anchor="start">${o.produced}</text>
-  </svg>`;
-}
-
-function drawDial(holder, cur, need, pst){
-  const w = 240, h = 150;
-  const cx = w/2, cy = 132, r = 96;
-  // scale: 0 .. max, with "need" sitting at 60% of the arc so there is headroom both ways
-  const max = Math.max(cur, need) < 0.01 ? 1 : Math.max(cur / 0.9, need / 0.6, 1);
-  const A0 = Math.PI, A1 = 0; // 180° sweep, left → right
-  const ang = v => A0 + (A1 - A0) * Math.min(1, Math.max(0, v / max));
-  const pt = (a, rad) => [cx + rad * Math.cos(a), cy - rad * Math.sin(a)];
-
-  const [ax0, ay0] = pt(A0, r);
-  const [ax1, ay1] = pt(A1, r);
-  const trackPath = `M ${ax0} ${ay0} A ${r} ${r} 0 0 1 ${ax1} ${ay1}`;
-
-  const na = ang(cur);
-  const [nx, ny] = pt(na, r);
-  const fillPath = `M ${ax0} ${ay0} A ${r} ${r} 0 0 1 ${nx} ${ny}`;
-
-  const stroke = { green:'var(--green)', amber:'var(--amber)', red:'var(--red)' }[pst];
-
-  // target tick for "potřebné tempo"
-  const ta = ang(need);
-  const [tx0, ty0] = pt(ta, r - 8);
-  const [tx1, ty1] = pt(ta, r + 8);
-
-  // needle
-  const [hx, hy] = pt(na, r - 14);
-  const [bx, by] = pt(na + Math.PI, 10);
-
-  holder.innerHTML = `
-  <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">
-    <path d="${trackPath}" fill="none" stroke="var(--surface-2)" stroke-width="12" stroke-linecap="round"/>
-    <path d="${fillPath}" fill="none" stroke="${stroke}" stroke-width="12" stroke-linecap="round"/>
-    <line x1="${tx0}" y1="${ty0}" x2="${tx1}" y2="${ty1}" stroke="var(--text)" stroke-width="2.5"/>
-    <text x="${tx1}" y="${ty1 - 6}" font-family="JetBrains Mono" font-size="10" fill="var(--text-dim)" text-anchor="middle">cíl</text>
-    <line x1="${bx}" y1="${by}" x2="${hx}" y2="${hy}" stroke="var(--text)" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="${cx}" cy="${cy}" r="6" fill="var(--text)"/>
-  </svg>`;
+  main.appendChild(wrap);
 }
 
 function tickClock(){
@@ -627,21 +424,11 @@ function applyTheme(light){
   themeBtn.textContent = light ? 'Tmavý režim' : 'Světlý režim';
   themeBtn.setAttribute('aria-pressed', String(light));
   try { localStorage.setItem('meter-theme', light ? 'light' : 'dark'); } catch(e){}
-  if (view.screen === 'graph') render(); // redraw chart/dial with new colours
 }
 let startLight = false;
 try { startLight = localStorage.getItem('meter-theme') === 'light'; } catch(e){}
 applyTheme(startLight);
 themeBtn.onclick = () => applyTheme(!document.documentElement.classList.contains('light'));
-
-/* redraw the chart when its container width changes (window resize, print reflow) */
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (view.screen === 'graph') render(); }, 150);
-});
-window.addEventListener('beforeprint', () => { if (view.screen === 'graph') render(); });
-window.addEventListener('afterprint', () => { if (view.screen === 'graph') render(); });
 
 render();
 </script>
