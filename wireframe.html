@@ -30,8 +30,8 @@
 
   /* status colours are conveyed by background-color; force them to print
      even when the browser's "Background graphics" option is off */
-  .tile, .bars, .bars span, .op-track, .op-track div,
-  .dot, .simple-bar-outer, .simple-bar-fill{
+  .tile, .bars, .bars span, .op-bar, .op-bar > div,
+  .simple-bar-outer, .simple-bar-fill{
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -115,27 +115,45 @@
   .tile-pct small{ font-family: var(--font-ui); font-weight:400; color: var(--text-dim); font-size:12px; }
 
   /* ---------- operations grid ---------- */
+  .grid.ops{ grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
   .op-tile{
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
+    border-radius: 8px;
+    padding: 22px 24px;
     cursor:pointer;
     text-align:left;
     color: var(--text);
     font-family: var(--font-ui);
-    display:flex; flex-direction:column; gap:10px;
+    display:flex; flex-direction:column; gap:16px;
+    transition: border-color .15s ease, transform .1s ease;
   }
-  .op-tile:hover{ border-color: var(--steel); }
-  .op-code{ font-family: var(--font-num); font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
-  .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; border:1px solid transparent; }
-  .dot.status-green{ background: var(--green); border-color: var(--green); }
-  .dot.status-amber{ background: var(--amber); border-color: var(--amber); }
-  .dot.status-red{ background: var(--red); border-color: var(--red); }
-  .op-track{ height:6px; background: var(--surface-2); border-radius:3px; overflow:hidden; }
-  .op-track div{ height:100%; border-radius:3px; border:1px solid transparent; }
-  .status-green .op-track div, .op-track div.status-green{ background: var(--green); border-color: var(--green); }
-  .op-meta{ font-family:var(--font-num); font-size:12px; color:var(--text-dim); display:flex; justify-content:space-between; }
+  .op-tile:hover{ border-color: var(--steel); transform: translateY(-1px); }
+  .op-tile:focus-visible{ outline: 2px solid var(--steel); outline-offset: 2px; }
+  .op-tile.status-green{ border-left: 4px solid var(--green); }
+  .op-tile.status-amber{ border-left: 4px solid var(--amber); }
+  .op-tile.status-red{ border-left: 4px solid var(--red); }
+
+  .op-code{ font-family: var(--font-num); font-size:24px; font-weight:600; }
+
+  .op-bar{
+    height: 46px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .op-bar > div{ height:100%; border:1px solid transparent; transition: width .3s ease; }
+  .op-bar.status-green > div{ background: var(--green); border-color: var(--green); }
+  .op-bar.status-amber > div{ background: var(--amber); border-color: var(--amber); }
+  .op-bar.status-red > div{ background: var(--red); border-color: var(--red); }
+
+  .op-meta{ font-family:var(--font-num); display:flex; justify-content:space-between; align-items:baseline; }
+  .op-meta .qty{ font-size:15px; color:var(--text-dim); }
+  .op-meta .pct{ font-size:24px; font-weight:700; }
+  .op-meta .pct.status-green{ color: var(--green); }
+  .op-meta .pct.status-amber{ color: var(--amber); }
+  .op-meta .pct.status-red{ color: var(--red); }
 
   /* ---------- operation view: simple operator display ---------- */
   .simple-view{
@@ -370,17 +388,20 @@ function renderOps(s){
   main.appendChild(label);
 
   const grid = document.createElement('div');
-  grid.className = 'grid';
+  grid.className = 'grid ops';
 
   s.ops.forEach(o => {
     const st = status(o.produced, o.target, o.shiftProgress);
     const pct = Math.min(100, Math.round((o.produced/o.target)*100));
     const tile = document.createElement('button');
-    tile.className = 'op-tile';
+    tile.className = 'op-tile status-' + st;
     tile.innerHTML = `
-      <div class="op-code"><span class="dot status-${st}"></span>${o.code}</div>
-      <div class="op-track"><div class="status-${st}" style="width:${pct}%"></div></div>
-      <div class="op-meta"><span>${o.produced} / ${o.target} ks</span><span>${pct}%</span></div>
+      <div class="op-code">${o.code}</div>
+      <div class="op-bar status-${st}"><div style="width:${pct}%"></div></div>
+      <div class="op-meta">
+        <span class="qty">${o.produced} / ${o.target} ks</span>
+        <span class="pct status-${st}">${pct} %</span>
+      </div>
     `;
     tile.onclick = () => { view = { screen:'graph', stredisko: s.code, op: o.code }; render(); };
     grid.appendChild(tile);
